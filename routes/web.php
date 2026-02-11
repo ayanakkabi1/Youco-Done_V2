@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\adminController;
 use App\Http\Controllers\Admin\DashboardController;
-
+use App\Http\Controllers\ReservationController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -24,4 +24,6 @@ Route::middleware([
 
 Route::middleware(['auth', 'role:admin'])
     ->get('/admin/dashboard', [DashboardController::class, 'index']);
-
+    
+Route::middleware(['auth', 'role:admin'])
+    ->get('/admin/restaurants/{id}/reservations', [ReservationController::class, 'reservationbyrestaurant']);
