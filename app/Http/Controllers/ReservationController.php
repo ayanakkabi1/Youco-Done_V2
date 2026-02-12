@@ -4,29 +4,39 @@ use App\Models\Restaurant;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Auth;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use Spatie\Permission\Traits\HasRoles;
 class ReservationController extends Controller {
     use AuthorizesRequests;
-    public function create_reservation(){
-        return view("reservations.create");
+    public function index(){
+        $reservations = Reservation::all();
+        return view('reservations.indexres', compact('reservations'));
     }
-    public function store_reservation(Request $request){
-        $data=$request->validate([
-            'date_reservation'  => 'required|date|after_or_equal:today',
+    public function create(){
+        $restaurants=Restaurant::all();
+        return view("reservations.createres", compact('restaurants'));
+    }
+    public function store_reservation(Request $request) 
+{
+    $data = $request->validate([
+        
+        'date_reservation'  => 'required|date|after:today', 
         'heure_reservation' => 'required|date_format:H:i',
         'nombre_personnes'  => 'required|integer|min:1|max:20',
         'restaurant_id'     => 'required|exists:restaurants,id',
-            
-        ]);
-        $alreadyBooked = Reservation::where('user_id', Auth::id())
+    ]);
+
+    $alreadyBooked = Reservation::where('user_id', Auth::id())
         ->where('date_reservation', $data['date_reservation'])
         ->where('heure_reservation', $data['heure_reservation'])
         ->exists();
 
     if ($alreadyBooked) {
-        return back()->withErrors(['error' => 'You already have a reservation at this time.']);
+        return back()->withErrors(['error' => 'Vous avez déjà une réservation à ce créneau.']);
     }
 
+    $this->authorize('create', Reservation::class);
 
     $reservation = Reservation::create([
         'date_reservation'  => $data['date_reservation'],
@@ -37,11 +47,29 @@ class ReservationController extends Controller {
         'status'            => 'en_attente',
     ]);
 
-    return redirect()->route('reservations.show', $reservation->id)
-                     ->with('success', 'Reservation requested!');
+    return redirect()->route('reservations.index') // Rediriger vers la liste est souvent plus simple
+                     ->with('success', 'Réservation demandée avec succès !');
+}
+    public function edit(Reservation $reservation){
+        $this->authorize('update', $reservation);
+        return view('reservations.editres', compact('reservation'));
     }
-
-    
+    public function update(Request $request, Reservation $reservation){
+    $this->authorize('update', $reservation);
+    $validated = $request->validate([
+        'reservation_time' => 'required|date',
+        'guests' => 'required|integer|min:1',
+        'status' => 'nullable|string',
+    ]);
+    $reservation->update($validated);
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    if ($request->has('status') && !$user->hasRole('restaurant_owner')) {
+    abort(403, 'Only owners can change the reservation status.');
+    }
+    return redirect()->route('reservations.indexres')
+                     ->with('success', 'Reservation updated successfully!');
+    }
     public function reservationbyrestaurant($id)
     {
         $restaurant=Restaurant::findOrFail($id);
