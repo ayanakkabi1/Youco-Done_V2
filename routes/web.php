@@ -27,3 +27,17 @@ Route::middleware(['auth', 'role:admin'])
     
 Route::middleware(['auth', 'role:admin'])
     ->get('/admin/restaurants/{id}/reservations', [ReservationController::class, 'reservationbyrestaurant']);
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::middleware(['role:client'])->group(function () {
+        Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
+        Route::post('/reservations', [ReservationController::class, 'store_reservation'])->name('reservations.store');
+    });
+
+    Route::middleware(['role:client|restaurant_owner'])->group(function () {
+        Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
+        Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
+        Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+    });
+});
