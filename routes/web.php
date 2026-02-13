@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\adminController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\PayPalController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -39,5 +40,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
         Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
         Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+        Route::delete('/reservations/{reservation}', [ReservationController::class, 'delete'])->name('reservations.delete');
     });
 });
+
+
+Route::get('paypal', [PayPalController::class, 'createTransaction'])->name('createTransaction');
+Route::post('process-transaction', [PayPalController::class, 'processTransaction'])->name('processTransaction');
+Route::get('success-transaction', [PayPalController::class, 'successTransaction'])->name('successTransaction');
+Route::get('cancel-transaction', [PayPalController::class, 'cancelTransaction'])->name('cancelTransaction');
