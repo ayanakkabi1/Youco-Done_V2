@@ -11,7 +11,7 @@ class ReservationController extends Controller {
     use AuthorizesRequests;
     public function index(){
         $reservations = Reservation::all();
-        return view('reservations.indexres', compact('reservations'));
+        return view('reservations.indexres',compact('reservations'));
     }
     public function create(){
         $restaurants=Restaurant::all();
@@ -69,6 +69,13 @@ class ReservationController extends Controller {
     }
     return redirect()->route('reservations.indexres')
                      ->with('success', 'Reservation updated successfully!');
+    }
+    public function delete(Reservation $reservation)
+    {
+        $this->authorize('delete', $reservation);
+        $reservation->delete();
+        return redirect()->route('reservations.indexres')
+                         ->with('success', 'Reservation deleted successfully!');
     }
     public function reservationbyrestaurant($id)
     {
