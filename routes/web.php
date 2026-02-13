@@ -5,6 +5,7 @@ use App\Http\Controllers\adminController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\PayPalController;
+use App\Http\Controllers\RestaurantController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -23,9 +24,26 @@ Route::middleware([
 // });
 
 
-Route::middleware(['auth', 'role:admin'])
-    ->get('/admin/dashboard', [DashboardController::class, 'index']);
-    
+
+
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+route::get('/restaurants/create',[RestaurantController::class,'create'])->name('restaurant.create');
+route::post('/restaurant/store',[RestaurantController::class,'store'])->name('restaurant.store');
+route::get('restaurant/{id}/edit',[RestaurantController::class,'edit'])->name('restaurant.edit');
+route::put('restaurant/{id}/update',[RestaurantController::class,'update'])->name('restaurant.update');
+
+route::get('/restaurants',[RestaurantController::class,'index'])->name('restaurant.index');
+route::get('/restaurant/{id}',[RestaurantController::class,'deatils'])->name('restaurant.details');
+Route::get('/restaurants/search', [RestaurantController::class, 'search'])->name('restaurant.search');
+
 Route::middleware(['auth', 'role:admin'])
     ->get('/admin/restaurants/{id}/reservations', [ReservationController::class, 'reservationbyrestaurant']);
 
