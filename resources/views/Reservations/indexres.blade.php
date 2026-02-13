@@ -7,11 +7,11 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+
             @if(session('error'))
-                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    {{ session('error') }}
-                </div>
+            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {{ session('error') }}
+            </div>
             @endif
 
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -26,34 +26,45 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($reservations as $reservation)
-                            <tr>
-                                <td class="px-6 py-4">{{ $reservation->restaurant->name }}</td>
-                                <td class="px-6 py-4">
-                                    {{ $reservation->date_reservation}} 
-                                    at {{ $reservation->heure_reservation }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        {{ ucfirst($reservation->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-medium">
-                                    @can('update', $reservation)
-                                            <a href="{{ route('reservations.edit', $reservation) }}" class="text-indigo-600 hover:text-indigo-900">
-                                                Edit
-                                            </a>
-                                       
-                                   
-                                        <span class="text-gray-400 italic">View Only</span>
-                                    @endcan
-                                </td>
-                            </tr>
+                        <tr>
+                            <td class="px-6 py-4">{{ $reservation->restaurant->name }}</td>
+                            <td class="px-6 py-4">
+                                {{ $reservation->date_reservation}}
+                                at {{ $reservation->heure_reservation }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    {{ ucfirst($reservation->status) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium">
+                                @can('update', $reservation)
+                                <a href="{{ route('reservations.edit', $reservation) }}" class="text-indigo-600 hover:text-indigo-900">
+                                    Edit
+                                </a>
+                                <span class="text-gray-400 italic hidden">View Only</span>
+                                @endcan
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium">
+                                <form action="{{ route('reservations.delete', $reservation) }}" method="POST">
+                                    @csrf
+                                    @can('delete', $reservation)
+                                    @method('DELETE')
+                                    <button type="submit">Supprimer</button>
+                                </form>
+                                <form action="{{ route('processTransaction') }}" method="POST">
+        @csrf
+        <button type="submit" class="btn btn-primary">Payer avec PayPal</button>
+    </form>
+                                @endcan
+                            </td>
+                        </tr>
                         @endforeach
                     </tbody>
                 </table>
 
                 @if($reservations->isEmpty())
-                    <p class="text-center py-4 text-gray-500">No reservations found.</p>
+                <p class="text-center py-4 text-gray-500">No reservations found.</p>
                 @endif
             </div>
         </div>
