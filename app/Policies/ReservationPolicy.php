@@ -58,6 +58,12 @@ class ReservationPolicy
      */
     public function delete(User $user, Reservation $reservation): bool
     {
+        if ($user->hasRole('client')) {
+            return $user->id === $reservation->user_id;
+        }
+        if($user->hasRole('restaurant_owner')) {
+            return $user->restaurant_id === $reservation->restaurant_id;
+        }
         return false;
     }
 
